@@ -163,12 +163,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:#e3e3e8; font-
 /* ── Present (fullscreen) mode ── */
 .present-btn{ background:var(--indigo); border-color:var(--indigo); color:#fff; }
 .present-btn:hover:not(:disabled){ background:#0060c9; border-color:#0060c9; color:#fff; }
+#app.presenting{ background:radial-gradient(1200px 720px at 50% -12%, #23252f 0%, #0c0d12 72%); }
 .presenting #slide-area{ padding:0; }
-.presenting .slide{ inset:0; border-radius:0; box-shadow:none; }
-.presenting #progress-wrap{ position:fixed; top:0; left:0; right:0; z-index:80; }
+.presenting .slide{ inset:2.6vh 2.8vw; border-radius:22px; box-shadow:0 32px 90px rgba(0,0,0,.55); }
+.presenting .si{ padding:3.4vh 3.4vw; }
+.presenting #progress-wrap{ position:fixed; top:0; left:0; right:0; z-index:80; background:rgba(255,255,255,.14); }
 .presenting #nav-bar{ position:fixed; left:50%; bottom:20px; transform:translateX(-50%); width:auto; height:auto; gap:20px; padding:9px 16px; border-radius:980px; background:rgba(22,24,30,.62); backdrop-filter:saturate(180%) blur(20px); box-shadow:0 12px 34px rgba(0,0,0,.45); transition:opacity .35s, transform .35s; z-index:90; }
 .presenting #counter{ color:rgba(255,255,255,.88); }
-.presenting #btn-present{ display:none; }
+.presenting #btn-present, .presenting #btn-download{ display:none; }
 .presenting.idle #nav-bar{ opacity:0; transform:translateX(-50%) translateY(22px); pointer-events:none; }
 .presenting.idle{ cursor:none; }
 .presenting #slide-area{ cursor:pointer; }
@@ -191,6 +193,20 @@ html, body { width:100%; height:100%; overflow:hidden; background:#e3e3e8; font-
 .presenting .shead .icontile{ width:58px; height:58px; }
 .presenting .tl-chev{ font-size:15px !important; padding:16px 12px 16px 22px; }
 .presenting .tl-item{ font-size:14px !important; padding:11px 8px; }
+
+/* ── Print / Unduh PDF ── */
+@media print {
+  @page { size:1280px 720px; margin:0; }
+  *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  html, body{ width:auto; height:auto; overflow:visible; background:#fff; }
+  #app{ display:block; height:auto; background:#fff; }
+  #progress-wrap, #nav-bar, #lightbox{ display:none !important; }
+  #slide-area{ position:static; padding:0; overflow:visible; }
+  .slide{ position:relative !important; inset:auto !important; opacity:1 !important; transform:none !important; display:flex !important;
+    width:1280px; height:720px; border-radius:0 !important; box-shadow:none !important; overflow:hidden; page-break-after:always; break-after:page; }
+  .slide:last-child{ page-break-after:auto; break-after:auto; }
+  .card.hov:hover{ transform:none; box-shadow:var(--shadow-sm); }
+}
 </style>
 </head>
 <body>
@@ -658,6 +674,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:#e3e3e8; font-
       <div id="counter">01 / 08</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
+      <button class="nav-btn" id="btn-download" onclick="downloadPDF()" title="Unduh sebagai PDF">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Unduh
+      </button>
       <button class="nav-btn present-btn" id="btn-present" onclick="enterPresent()" title="Present — layar penuh">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Present
       </button>
@@ -766,6 +785,17 @@ function armIdle(){
   idleT = setTimeout(()=>{ if(appEl.classList.contains('presenting')) appEl.classList.add('idle'); }, 2600);
 }
 document.addEventListener('mousemove', ()=>{ if(appEl.classList.contains('presenting')) armIdle(); });
+
+/* ── Unduh sebagai PDF (print) ── */
+function fillAllAnims(){
+  document.querySelectorAll('.barfill,.hbar-fill').forEach(b=>b.style.width=b.dataset.w);
+  document.querySelectorAll('.donut-seg').forEach(s=>{ s.setAttribute('stroke-dasharray', s.dataset.len+' '+(100-parseFloat(s.dataset.len))); s.setAttribute('stroke-dashoffset', s.dataset.off||0); });
+  document.querySelectorAll('.gauge-fill').forEach(s=>s.setAttribute('stroke-dasharray', s.dataset.len+' '+(100-parseFloat(s.dataset.len))));
+  document.querySelectorAll('.gauge-needle').forEach(s=>{ const deg=-90+(parseFloat(s.dataset.rot)/100*180); s.style.transform='rotate('+deg+'deg)'; });
+  document.querySelectorAll('.count').forEach(c=>c.textContent=c.dataset.to);
+}
+function downloadPDF(){ fillAllAnims(); window.print(); }
+window.addEventListener('beforeprint', fillAllAnims);
 // Klik slide untuk lanjut (saat presentasi); abaikan klik foto & kontrol
 document.getElementById('slide-area').addEventListener('click', e=>{
   if(!appEl.classList.contains('presenting')) return;
