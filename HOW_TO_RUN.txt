@@ -1,0 +1,90 @@
+============================================================
+  CARA MENJALANKAN — Slide RTM Isu Operasional WH (AWGW)
+============================================================
+
+Proyek ini adalah 1 file presentasi HTML (index.html) + folder
+gambar (img/). Tidak perlu install apa pun.
+
+
+------------------------------------------------------------
+1. BUKA LANGSUNG (PALING GAMPANG)
+------------------------------------------------------------
+- Klik dua kali file:  index.html
+  (otomatis terbuka di browser default).
+
+  ATAU klik kanan index.html > Open With > Chrome / Safari / Edge.
+
+- Disarankan pakai Google Chrome (paling rapi untuk Present & Unduh PDF).
+
+
+------------------------------------------------------------
+2. BUKA VERSI ONLINE (GITHUB PAGES)
+------------------------------------------------------------
+Bisa dibuka dari HP / laptop mana pun, tanpa file:
+
+  https://rafishalahudin.github.io/slidescmjune/
+
+Setiap kali ada perubahan yang di-push ke GitHub, halaman ini
+otomatis ter-update (tunggu < 1 menit, lalu refresh).
+
+
+------------------------------------------------------------
+3. NAVIGASI SLIDE
+------------------------------------------------------------
+- Tombol  "Prev" / "Next"  di bawah.
+- Klik titik (dots) di bawah untuk lompat ke slide tertentu.
+- Keyboard:
+    Panah Kanan / Bawah / Spasi  = slide berikutnya
+    Panah Kiri / Atas            = slide sebelumnya
+- Klik foto bukti = perbesar (zoom). Klik lagi / Esc = tutup.
+
+
+------------------------------------------------------------
+4. MODE PRESENT (LAYAR PENUH — ala Canva)
+------------------------------------------------------------
+- Klik tombol  "Present"  (biru) di kanan bawah.
+- Slide tampil layar penuh.
+    * Klik slide        = maju ke slide berikutnya
+    * Panah kiri/atas   = mundur
+    * Gerakkan mouse    = munculkan kontrol (auto-hilang saat diam)
+    * Esc               = keluar dari layar penuh
+
+
+------------------------------------------------------------
+5. UNDUH / SIMPAN JADI PDF
+------------------------------------------------------------
+- Klik tombol  "Unduh".
+- Pada dialog cetak, pilih:
+    Destination / Tujuan : Save as PDF
+    Layout               : Landscape
+    Margins              : Default
+- Klik  Save.
+
+Catatan: warna & background sudah dipaksa ikut tercetak, jadi
+hasil PDF tetap berwarna walau opsi "Background graphics" tidak
+dicentang. Tiap slide = 1 halaman (16:9).
+
+
+------------------------------------------------------------
+6. STRUKTUR FILE
+------------------------------------------------------------
+  index.html        -> seluruh presentasi (HTML + CSS + JS jadi satu)
+  img/              -> logo & foto bukti
+  HOW_TO_RUN.txt    -> file ini
+
+Untuk mengedit isi/teks slide: buka index.html dengan editor teks
+(mis. VS Code), ubah, simpan, lalu refresh browser.
+
+
+------------------------------------------------------------
+7. UPDATE KE GITHUB (opsional, untuk yang punya akses)
+------------------------------------------------------------
+Dari Terminal di folder proyek:
+
+  git add -A
+  git commit -m "update slide"
+  git push
+
+GitHub Pages akan rebuild otomatis.
+
+============================================================
