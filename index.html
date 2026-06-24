@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RTM Isu Operasional WH — AWGW · Juni 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root{
+  --indigo:#0071e3; --indigo-d:#0071e3; --blue:#0a84ff;
+  --green:#34c759; --teal:#30b0c7; --amber:#ff9500; --red:#ff3b30; --violet:#5e5ce6;
+  --ink:#1d1d1f; --ink2:#1d1d1f; --muted:#6e6e73; --line:#e8e8ed;
+  --bg:#f5f5f7; --card:#ffffff;
+  --shadow:0 6px 28px rgba(0,0,0,.08);
+  --shadow-sm:0 2px 14px rgba(0,0,0,.055);
+  --shadow-lift:0 16px 44px rgba(0,0,0,.13);
+}
+
+html, body { width:100%; height:100%; overflow:hidden; background:#e3e3e8; font-family:'Inter','SF Pro Display',-apple-system,system-ui,sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; letter-spacing:-.011em; }
+
+/* ── App shell ── */
+#app { width:100vw; height:100vh; display:flex; flex-direction:column; background:
+   radial-gradient(1100px 620px at 50% -12%, #ffffff 0%, transparent 62%),
+   linear-gradient(180deg,#eef0f3 0%, #e2e3e9 100%); }
+#progress-wrap { height:3px; background:#e0e0e6; flex-shrink:0; }
+#progress-bar  { height:100%; background:var(--indigo); transition:width .5s cubic-bezier(.22,1,.36,1); width:0%; }
+#slide-area    { flex:1; overflow:hidden; position:relative; padding:1.4vh 1.4vw; }
+
+.slide { position:absolute; inset:1.4vh 1.4vw; opacity:0; transform:translateX(40px) scale(.994); transition:opacity .45s ease, transform .45s cubic-bezier(.32,.72,0,1); pointer-events:none;
+  background:var(--bg); border-radius:30px; overflow:hidden;
+  box-shadow:0 18px 56px rgba(0,0,0,.14); }
+.slide.active { opacity:1; transform:translateX(0) scale(1); pointer-events:all; }
+.slide.exit   { opacity:0; transform:translateX(-40px) scale(.994); }
+
+/* ── Nav bar ── */
+#nav-bar { height:52px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 26px; }
+.nav-btn { background:rgba(255,255,255,.7); border:1px solid rgba(0,0,0,.08); color:var(--indigo); border-radius:980px; padding:9px 20px; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; transition:all .2s; outline:none; font-family:inherit; backdrop-filter:saturate(180%) blur(20px); }
+.nav-btn:hover:not(:disabled) { background:var(--indigo); border-color:var(--indigo); color:#fff; }
+.nav-btn:disabled { opacity:.32; cursor:default; }
+.dot { width:7px; height:7px; border-radius:50%; background:#c7c7cc; cursor:pointer; transition:all .22s; }
+.dot.active { background:var(--indigo); width:22px; border-radius:4px; }
+#counter { font-size:11px; color:#86868b; font-weight:600; letter-spacing:.6px; margin-top:5px; text-align:center; }
+
+/* ── Slide inner ── */
+.si { width:100%; height:100%; display:flex; flex-direction:column; padding:2.7vh 2.6vw; overflow:hidden; position:relative; z-index:1; }
+
+/* ── Header ── */
+.shead { display:flex; align-items:flex-start; gap:14px; margin-bottom:1rem; }
+.icontile { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff;
+  background:linear-gradient(135deg,#0a84ff,#0071e3); box-shadow:0 6px 16px rgba(0,113,227,.30); }
+.icontile.red{ background:linear-gradient(135deg,#ff6961,#ff3b30); box-shadow:0 6px 16px rgba(255,59,48,.28); }
+.icontile.amber{ background:linear-gradient(135deg,#ffb340,#ff9500); box-shadow:0 6px 16px rgba(255,149,0,.28); }
+.icontile.green{ background:linear-gradient(135deg,#30d158,#34c759); box-shadow:0 6px 16px rgba(52,199,89,.28); }
+.icontile.violet{ background:linear-gradient(135deg,#5e5ce6,#0a84ff); box-shadow:0 6px 16px rgba(94,92,230,.28); }
+.eyebrow { font-size:10.5px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:var(--indigo); margin-bottom:5px; }
+.slide-title { font-size:clamp(1.15rem,2vw,1.6rem); font-weight:700; color:var(--ink2); line-height:1.22; letter-spacing:-.022em; }
+.htitle { font-size:clamp(1.3rem,2.6vw,2rem); font-weight:700; color:var(--ink2); letter-spacing:-.03em; }
+.hsub { font-size:13px; color:var(--muted); margin-top:3px; }
+
+/* ── Typography ── */
+.body-text { font-size:clamp(12px,1.32vw,14.5px); color:#424245; line-height:1.7; }
+.label { font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:7px; color:var(--muted); }
+
+/* ── Pills ── */
+.chip { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:980px; font-size:11px; font-weight:600; letter-spacing:0; }
+.chip::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.chip-red{ background:rgba(255,59,48,.12); color:#d70015; } .chip-amber{ background:rgba(255,149,0,.16); color:#b25000; }
+.chip-green{ background:rgba(52,199,89,.16); color:#248a3d; } .chip-blue{ background:rgba(0,113,227,.12); color:#0071e3; }
+.chip-violet{ background:rgba(94,92,230,.12); color:#5e5ce6; }
+.chip-gray{ background:#eeeef0; color:#6e6e73; } .chip-gray::before{ background:#aeaeb2; }
+
+/* ── Cards ── */
+.card { background:var(--card); border:1px solid rgba(0,0,0,.045); border-radius:20px; padding:1.05rem 1.15rem; box-shadow:var(--shadow-sm); transition:transform .25s cubic-bezier(.32,.72,0,1), box-shadow .25s; }
+.card.hov:hover{ transform:translateY(-2px); box-shadow:var(--shadow-lift); }
+.tint-red{ background:rgba(255,59,48,.05); border-color:rgba(255,59,48,.14); } .tint-amber{ background:rgba(255,149,0,.06); border-color:rgba(255,149,0,.16); }
+.tint-green{ background:rgba(52,199,89,.06); border-color:rgba(52,199,89,.16); } .tint-blue{ background:rgba(0,113,227,.05); border-color:rgba(0,113,227,.14); }
+.tint-violet{ background:rgba(94,92,230,.05); border-color:rgba(94,92,230,.14); }
+.accent-l{ border-left:4px solid var(--indigo); }
+.solid-indigo{ background:linear-gradient(135deg,#0071e3,#0a84ff); color:#fff; border:none; box-shadow:0 8px 22px rgba(0,113,227,.32); }
+.solid-indigo .label{ color:rgba(255,255,255,.75); }
+
+/* ── Meta pills ── */
+.meta-row { display:flex; gap:9px; flex-wrap:wrap; margin-bottom:1rem; }
+.mpill { background:#fff; border:1px solid rgba(0,0,0,.05); border-radius:12px; padding:7px 13px; box-shadow:var(--shadow-sm); }
+.mpill-k { font-size:8.5px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#86868b; margin-bottom:3px; }
+.mpill-v { font-size:12px; font-weight:600; color:var(--ink); }
+
+/* ── Grids ── */
+.g3 { display:grid; grid-template-columns:1.05fr 1fr 1fr; gap:.95rem; flex:1; overflow:hidden; min-height:0; }
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:.95rem; flex:1; overflow:hidden; min-height:0; }
+.g2l{ display:grid; grid-template-columns:1.35fr 1fr; gap:.95rem; flex:1; overflow:hidden; min-height:0; }
+
+/* ── Case item ── */
+.ci { display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; }
+.cn { min-width:21px; height:21px; border-radius:7px; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:1px; flex-shrink:0; background:rgba(255,59,48,.12); color:#d70015; }
+.cn.g{ background:rgba(52,199,89,.16); color:#248a3d; }
+
+/* ── FU box ── */
+.fu-box { background:rgba(52,199,89,.07); border:1px solid rgba(52,199,89,.2); border-radius:14px; padding:.7rem .9rem; }
+
+/* ── Photo panel ── */
+.photo-panel { display:flex; flex-direction:column; min-height:0; background:#fff; }
+.photos-scroll { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:7px; padding-right:3px; min-height:0; }
+.photos-scroll::-webkit-scrollbar { width:4px; }
+.photos-scroll::-webkit-scrollbar-thumb { background:#c7c7cc; border-radius:4px; }
+.photo-img { width:100%; border-radius:14px; border:1px solid rgba(0,0,0,.06); object-fit:contain; background:#f5f5f7; cursor:zoom-in; transition:transform .25s cubic-bezier(.32,.72,0,1), box-shadow .25s; }
+.photo-img:hover { transform:scale(1.01); box-shadow:0 10px 30px rgba(0,0,0,.14); }
+.photo-caption { font-size:11px; color:#86868b; font-weight:500; text-align:center; margin-top:6px; }
+
+/* ── Stat cards ── */
+.stat { display:flex; align-items:center; gap:14px; }
+.stat .icontile{ width:46px; height:46px; border-radius:14px; }
+.stat-num { font-size:clamp(1.5rem,3vw,2.3rem); font-weight:900; letter-spacing:-1px; line-height:1; }
+.stat-lab { font-size:11.5px; color:var(--muted); font-weight:600; margin-top:3px; }
+
+/* ── Progress / bars ── */
+.barwrap { background:#e8e8ed; border-radius:980px; height:8px; overflow:hidden; }
+.barfill { height:100%; width:0; border-radius:8px; transition:width 1.1s cubic-bezier(.22,1,.36,1); }
+.hbar-row{ display:flex; align-items:center; gap:10px; margin-bottom:11px; }
+.hbar-lab{ width:96px; font-size:10.5px; font-weight:700; color:var(--ink); flex-shrink:0; letter-spacing:.2px; }
+.hbar-track{ flex:1; background:#eef1fa; height:13px; border-radius:7px; overflow:hidden; }
+.hbar-fill{ height:100%; width:0; border-radius:7px; transition:width 1s cubic-bezier(.22,1,.36,1); }
+.hbar-val{ width:22px; font-size:11.5px; font-weight:800; color:var(--muted); text-align:right; }
+
+/* ── Action rows ── */
+.action-row { display:flex; align-items:center; gap:14px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:.8rem 1rem; box-shadow:var(--shadow-sm); transition:transform .18s, box-shadow .18s; }
+.action-row:hover{ transform:translateX(3px); box-shadow:var(--shadow); }
+.aref { min-width:60px; text-align:center; font-size:11px; font-weight:800; color:var(--indigo-d); background:#e6effe; border-radius:9px; padding:7px 8px; line-height:1.3; flex-shrink:0; }
+.pdot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.pdot.h { background:var(--red); box-shadow:0 0 0 4px #fff1f2; }
+.pdot.m { background:var(--amber); box-shadow:0 0 0 4px #fff7ed; }
+
+.scr { overflow-y:auto; }
+.scr::-webkit-scrollbar { width:4px; }
+.scr::-webkit-scrollbar-thumb { background:#c7c7cc; border-radius:4px; }
+
+/* ── Lightbox ── */
+#lightbox { display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,.92); align-items:center; justify-content:center; cursor:zoom-out; }
+#lightbox.open { display:flex; }
+#lightbox img { max-width:90vw; max-height:90vh; border-radius:12px; object-fit:contain; box-shadow:0 25px 60px rgba(0,0,0,.5); }
+#lb-x { position:fixed; top:20px; right:24px; color:rgba(255,255,255,.7); font-size:26px; cursor:pointer; }
+
+/* ── Chart anim helpers ── */
+.donut-seg{ transition:stroke-dasharray .9s cubic-bezier(.22,1,.36,1); }
+.gauge-fill{ transition:stroke-dasharray 1s cubic-bezier(.22,1,.36,1); }
+.gauge-needle{ transition:transform 1s cubic-bezier(.22,1,.36,1); transform-origin:60px 60px; }
+.legdot{ width:9px; height:9px; border-radius:3px; flex-shrink:0; }
+
+/* ── Cover ── */
+#slide-cover{ background:linear-gradient(165deg,#0a84ff 0%, #0071e3 52%, #0060c9 100%); }
+.glass{ background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); border-radius:18px; backdrop-filter:blur(8px); box-shadow:0 16px 40px rgba(30,30,80,.22); }
+
+/* ── Timeline ── */
+.tl-col{ display:flex; flex-direction:column; gap:10px; min-height:0; }
+.tl-chev{ position:relative; color:#fff; font-weight:700; font-size:12.5px; letter-spacing:.4px; text-align:center; padding:12px 10px 12px 18px; border-radius:3px;
+  clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%, 14px 50%); box-shadow:0 4px 12px rgba(0,0,0,.12); }
+.tl-chev.first{ padding-left:12px; clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%); }
+.tl-card{ flex:1; background:#fff; border:1px solid rgba(0,0,0,.045); border-radius:18px; box-shadow:var(--shadow-sm); padding:.85rem .7rem; display:flex; flex-direction:column; gap:7px; align-items:stretch; }
+.tl-item{ background:#f5f5f7; border-radius:9px; padding:8px 6px; font-size:11px; font-weight:600; color:#1d1d1f; text-align:center; letter-spacing:-.01em; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="slide-area">
+
+    <!-- ══ COVER ══ -->
+    <div class="slide active" id="slide-cover">
+      <div style="display:flex;width:100%;height:100%;position:relative;overflow:hidden;">
+        <!-- bg blobs -->
+        <div style="position:absolute;top:-120px;right:-80px;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.08);"></div>
+        <div style="position:absolute;bottom:-140px;left:-90px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,.06);"></div>
+
+        <!-- LEFT -->
+        <div style="flex:1.1;display:flex;flex-direction:column;justify-content:space-between;padding:4.5vh 3.6vw;position:relative;z-index:1;min-width:0;color:#fff;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="background:#fff;border-radius:16px;padding:14px 22px;display:flex;align-items:center;gap:20px;box-shadow:0 12px 28px rgba(0,0,0,.22);">
+              <img src="img/logo-scm.png" alt="SCM" style="height:58px;object-fit:contain;" />
+              <div style="width:1.5px;height:48px;background:#e5e7eb;"></div>
+              <img src="img/logo-erajaya.png" alt="Erajaya" style="height:42px;object-fit:contain;" />
+            </div>
+          </div>
+
+          <div>
+            <div style="display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:6px 15px;margin-bottom:1.4rem;">
+              <span style="width:7px;height:7px;border-radius:50%;background:#30d158;box-shadow:0 0 10px #30d158;"></span>
+              <span style="font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Warehouse Operations · Juni 2026</span>
+            </div>
+            <h1 style="font-size:clamp(1.9rem,4.2vw,3.7rem);font-weight:900;letter-spacing:-1.5px;line-height:1.04;text-transform:uppercase;">Operational Issue</h1>
+            <h1 style="font-size:clamp(1.9rem,4.2vw,3.7rem);font-weight:900;letter-spacing:-1.5px;line-height:1.04;text-transform:uppercase;">— Lifestyle</h1>
+            <div style="width:100%;max-width:430px;height:3px;background:linear-gradient(90deg,#fff,rgba(255,255,255,0));border-radius:2px;margin:1.1rem 0 1.1rem;"></div>
+            <h2 style="font-size:clamp(1.3rem,2.8vw,2.2rem);font-weight:900;letter-spacing:-.3px;text-transform:uppercase;color:#ff6961;">Warehouse — AWGW</h2>
+          </div>
+
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:.15rem;">PT. ERA GAYA INDONESIA</div>
+            <div style="font-size:13px;font-weight:400;color:rgba(255,255,255,.8);margin-bottom:1rem;">(ANTA, Wilson, Gentlewomen)</div>
+            <div style="display:inline-flex;align-items:center;gap:18px;background:#fff;border-radius:13px;padding:11px 20px;margin-bottom:.9rem;box-shadow:0 12px 26px rgba(0,0,0,.2);">
+              <img src="img/logo-anta.png" alt="ANTA" style="height:21px;object-fit:contain;">
+              <span style="color:#d1d5db;">·</span>
+              <img src="img/logo-wilson.png" alt="WILSON" style="height:19px;object-fit:contain;">
+              <span style="color:#d1d5db;">·</span>
+              <img src="img/logo-gw.png" alt="GENTLEWOMAN" style="height:13px;object-fit:contain;">
+            </div>
+            <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.85);">Juni 2026</div>
+          </div>
+        </div>
+
+        <!-- RIGHT — Warehouse illustration -->
+        <div style="width:42%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6rem;padding:4vh 3vw;position:relative;z-index:1;flex-shrink:0;">
+          <!-- Ilustrasi gudang -->
+          <svg viewBox="0 0 420 300" style="width:92%;max-width:400px;" fill="none">
+            <!-- ground shadow -->
+            <ellipse cx="210" cy="262" rx="186" ry="14" fill="rgba(0,0,0,.13)"/>
+            <!-- roof slab -->
+            <rect x="46" y="86" width="216" height="20" rx="6" fill="rgba(255,255,255,.24)" stroke="#fff" stroke-width="2"/>
+            <!-- building body -->
+            <rect x="58" y="104" width="192" height="148" rx="8" fill="rgba(255,255,255,.12)" stroke="#fff" stroke-width="2.5"/>
+            <!-- sign -->
+            <rect x="78" y="116" width="96" height="22" rx="5" fill="rgba(255,255,255,.92)"/>
+            <text x="126" y="131" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="800" fill="#0071e3" letter-spacing="1">AWGW</text>
+            <!-- roller door -->
+            <rect x="78" y="150" width="96" height="102" rx="4" fill="rgba(255,255,255,.92)"/>
+            <g stroke="rgba(0,113,227,.18)" stroke-width="1.6">
+              <line x1="80" y1="164" x2="172" y2="164"/><line x1="80" y1="178" x2="172" y2="178"/>
+              <line x1="80" y1="192" x2="172" y2="192"/><line x1="80" y1="206" x2="172" y2="206"/>
+              <line x1="80" y1="220" x2="172" y2="220"/><line x1="80" y1="234" x2="172" y2="234"/>
+            </g>
+            <!-- window -->
+            <rect x="190" y="150" width="48" height="46" rx="4" fill="rgba(255,255,255,.16)" stroke="#fff" stroke-width="2"/>
+            <line x1="214" y1="150" x2="214" y2="196" stroke="#fff" stroke-width="1.6"/>
+            <line x1="190" y1="173" x2="238" y2="173" stroke="#fff" stroke-width="1.6"/>
+            <!-- stacked boxes (front-left) -->
+            <rect x="60" y="214" width="42" height="38" rx="3" fill="#ffb340" stroke="#fff" stroke-width="2"/>
+            <line x1="81" y1="214" x2="81" y2="252" stroke="rgba(255,255,255,.7)" stroke-width="1.6"/>
+            <rect x="66" y="180" width="30" height="34" rx="3" fill="#ff9500" stroke="#fff" stroke-width="2"/>
+            <line x1="81" y1="180" x2="81" y2="214" stroke="rgba(255,255,255,.7)" stroke-width="1.6"/>
+            <!-- forklift -->
+            <!-- overhead guard -->
+            <path d="M276 162 H334 M280 162 V206 M320 162 V198" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- body -->
+            <path d="M272 204 h66 a6 6 0 0 1 6 6 v18 a6 6 0 0 1 -6 6 h-66 a6 6 0 0 1 -6 -6 v-18 a6 6 0 0 1 6 -6 z" fill="#ff9500" stroke="#fff" stroke-width="2.5"/>
+            <rect x="270" y="186" width="14" height="20" rx="3" fill="#ff9500" stroke="#fff" stroke-width="2.5"/>
+            <!-- mast -->
+            <line x1="348" y1="150" x2="348" y2="238" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="356" y1="158" x2="356" y2="238" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+            <!-- load box -->
+            <rect x="352" y="194" width="34" height="34" rx="3" fill="#ffb340" stroke="#fff" stroke-width="2"/>
+            <line x1="369" y1="194" x2="369" y2="228" stroke="rgba(255,255,255,.7)" stroke-width="1.6"/>
+            <!-- forks -->
+            <path d="M348 230 H390" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+            <!-- wheels -->
+            <circle cx="290" cy="240" r="14" fill="#16223a" stroke="#fff" stroke-width="2.5"/>
+            <circle cx="290" cy="240" r="4.5" fill="#fff"/>
+            <circle cx="328" cy="240" r="14" fill="#16223a" stroke="#fff" stroke-width="2.5"/>
+            <circle cx="328" cy="240" r="4.5" fill="#fff"/>
+          </svg>
+          <div style="text-align:center;color:#fff;">
+            <div style="font-size:1.15rem;font-weight:800;letter-spacing:.2px;">Warehouse AWGW</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.78);margin-top:4px;">Supply Chain Management · Operational Review 2026</div>
+          </div>
+          <div style="background:#fff;border-radius:13px;padding:.7rem 1.2rem;display:flex;align-items:center;gap:10px;box-shadow:0 14px 30px rgba(0,0,0,.24);">
+            <img src="img/logo-erajaya.png" alt="Erajaya" style="height:28px;object-fit:contain;" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ISU #1 ══ -->
+    <div class="slide" id="slide-isu1">
+      <div class="si">
+        <div class="shead">
+          <div class="icontile red">1</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap;">
+              <span class="chip chip-red">High Priority</span><span class="chip chip-gray">EGI</span>
+            </div>
+            <div class="slide-title">Beda SKU antara Packing List dengan Fisik (Plus–Minus Fisik)</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="mpill"><div class="mpill-k">PT</div><div class="mpill-v">PT. Era Gaya Indonesia (EGI)</div></div>
+          <div class="mpill"><div class="mpill-k">Distributor</div><div class="mpill-v">EMI (ANTA) · EBI (GW)</div></div>
+          <div class="mpill"><div class="mpill-k">Brand</div><div class="mpill-v" style="display:flex;align-items:center;gap:9px;height:18px;"><img src="img/logo-anta.png" alt="ANTA" style="height:15px;object-fit:contain;"><span style="color:#d2d2d7;">·</span><img src="img/logo-gw.png" alt="GENTLEWOMAN" style="height:10px;object-fit:contain;"></div></div>
+        </div>
+        <div class="g3" style="grid-template-columns:.72fr 1.14fr 1.14fr;">
+          <div class="card hov tint-red accent-l" style="display:flex;flex-direction:column;gap:.7rem;">
+            <div class="label" style="color:#d70015;">Deskripsi Isu</div>
+            <p class="body-text">Barang masuk ANTA dan GW masih sering mengalami <strong style="color:#0071e3;">BEDA SKU</strong> antara Packing List (PL) dengan fisik. Selain itu, ditemukan juga SKU yang jumlahnya tidak sesuai dengan fisik barang — terjadi selisih <strong style="color:#d70015;">PLUS / MINUS FISIK</strong>.</p>
+            <div style="background:#fff;border:1px solid #ffe1e6;border-radius:12px;padding:.7rem;">
+              <div class="label" style="color:#d70015;margin-bottom:6px;">Contoh Case</div>
+              <div class="ci"><div class="cn">1</div><span class="body-text">Barang ANTA <strong>11 Juni 2026</strong> — ditemukan selisih fisik saat penerimaan di WH.</span></div>
+              <div class="ci" style="margin-bottom:0;"><div class="cn">2</div><span class="body-text">Barang GW <strong>10 Juni 2026</strong> — masih ditemukan selisih fisik saat penerimaan di WH.</span></div>
+            </div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti — Email ANTA (11 Juni)</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image4.png" onclick="lb(this.src)" /></div>
+            <div class="photo-caption">Re: Incoming ANTA — Selisih Fisik</div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti — Email GW (10 Juni)</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image8.png" onclick="lb(this.src)" /></div>
+            <div class="photo-caption">Re: GW HBL — Plus Minus Fisik</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ISU #2 ══ -->
+    <div class="slide" id="slide-isu2">
+      <div class="si">
+        <div class="shead">
+          <div class="icontile red">2</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap;">
+              <span class="chip chip-red">High Priority</span><span class="chip chip-gray">EGI</span>
+            </div>
+            <div class="slide-title">Proses PO di SAP Sangat Lama — Bisa Sampai H+10 dari GR ACCURATE</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="mpill"><div class="mpill-k">PT</div><div class="mpill-v">PT. Era Gaya Indonesia (EGI)</div></div>
+          <div class="mpill"><div class="mpill-k">Distributor</div><div class="mpill-v">EMI (ANTA) · EBI (GW)</div></div>
+          <div class="mpill"><div class="mpill-k">Brand</div><div class="mpill-v" style="display:flex;align-items:center;gap:9px;height:18px;"><img src="img/logo-anta.png" alt="ANTA" style="height:15px;object-fit:contain;"><span style="color:#d2d2d7;">·</span><img src="img/logo-gw.png" alt="GENTLEWOMAN" style="height:10px;object-fit:contain;"></div></div>
+        </div>
+        <div class="g2l">
+          <div style="display:flex;flex-direction:column;gap:.85rem;overflow:hidden;min-height:0;">
+            <div class="card hov tint-red accent-l">
+              <div class="label" style="color:#d70015;">Deskripsi Isu</div>
+              <p class="body-text">Proses PO ANTA dan GW di SAP sangat lama — bisa sampai <strong style="color:#d70015;">H+10</strong> dari GR PO di ACCURATE. Khusus ANTA, PO di ACCURATE sering tidak sesuai dengan PL barang masuk, sehingga harus menunggu <strong>proses revisi PO</strong> terlebih dahulu.</p>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;flex:1;min-height:0;">
+              <div class="card hov" style="display:flex;flex-direction:column;justify-content:center;">
+                <div class="label" style="color:#d70015;">Case ANTA</div>
+                <div style="font-size:2.2rem;font-weight:900;color:#d70015;line-height:1;">H+14</div>
+                <div class="barwrap" style="margin:10px 0;"><div class="barfill" data-w="100%" style="background:linear-gradient(90deg,#ff6961,#ff3b30);"></div></div>
+                <p class="body-text" style="font-size:12px;">Masuk <strong>4 Juni 2026</strong> → PO GR baru selesai <strong>18 Juni 2026</strong>. Masih ada <strong>1 PO</strong> yang belum bisa GR sampai sekarang.</p>
+              </div>
+              <div class="card hov" style="display:flex;flex-direction:column;justify-content:center;">
+                <div class="label" style="color:#b25000;">Case GW</div>
+                <div style="font-size:1.5rem;font-weight:900;color:#b25000;line-height:1.1;">Belum Release</div>
+                <div class="barwrap" style="margin:10px 0;"><div class="barfill" data-w="100%" style="background:linear-gradient(90deg,#ffb340,#ff9500);"></div></div>
+                <p class="body-text" style="font-size:12px;">Masuk <strong>10 Juni 2026</strong> → sampai saat ini PO SAP-nya <strong>belum di-release</strong>.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti — Tracking GR SAP</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image2.png" onclick="lb(this.src)" /></div>
+            <div class="photo-caption">Tracking GR SAP — ANTA &amp; GW</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ISU #3 ══ -->
+    <div class="slide" id="slide-isu3">
+      <div class="si">
+        <div class="shead">
+          <div class="icontile amber">3</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap;">
+              <span class="chip chip-amber">In Progress</span><span class="chip chip-green">FU: Concall Merchandiser</span>
+            </div>
+            <div class="slide-title">Material Baru Belum di-EXTEND oleh Merchandiser Sebelum GR di WH</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="mpill"><div class="mpill-k">PT</div><div class="mpill-v">PT. Era Gaya Indonesia (EGI)</div></div>
+          <div class="mpill"><div class="mpill-k">Distributor</div><div class="mpill-v">EMI (ANTA) · EBI (GW)</div></div>
+          <div class="mpill"><div class="mpill-k">Brand</div><div class="mpill-v" style="display:flex;align-items:center;gap:9px;height:18px;"><img src="img/logo-anta.png" alt="ANTA" style="height:15px;object-fit:contain;"><span style="color:#d2d2d7;">·</span><img src="img/logo-gw.png" alt="GENTLEWOMAN" style="height:10px;object-fit:contain;"></div></div>
+        </div>
+        <div class="g3">
+          <div class="card hov tint-amber accent-l" style="display:flex;flex-direction:column;gap:.7rem;border-left-color:#ff9500;">
+            <div class="label" style="color:#b25000;">Deskripsi Isu</div>
+            <p class="body-text">Bila ada <strong>kode material (SKU) baru</strong> di SAP, team Merchandiser belum sekaligus melakukan proses <strong style="color:#0071e3;">EXTEND</strong>. Akibatnya, saat team WH melakukan <strong>PO GR</strong>, prosesnya <strong style="color:#d70015;">gagal</strong> untuk material tersebut.</p>
+            <div class="ci"><div class="cn" style="background:#fef3c7;color:#b25000;">1</div><span class="body-text">Barang masuk ANTA <strong>11 Juni 2026</strong> → baru bisa di-GR <strong>19 Juni 2026</strong>.</span></div>
+
+            <!-- Catatan (sesuai sumber) -->
+            <div class="fu-box" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:.7rem;padding:1.15rem 1.25rem;">
+              <div style="display:flex;align-items:center;gap:11px;">
+                <div class="icontile green" style="width:40px;height:40px;border-radius:12px;font-size:18px;">✓</div>
+                <div class="label" style="color:#248a3d;margin-bottom:0;font-size:13px;letter-spacing:1.4px;">Catatan</div>
+              </div>
+              <p class="body-text" style="color:#1f7a35;font-size:14.5px;line-height:1.75;">Sudah dilakukan <strong>concall dengan Merchandiser</strong> terkait isu ini.</p>
+            </div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti — Status PO &amp; GR</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image5.png" onclick="lb(this.src)" /></div>
+            <div class="photo-caption">Re: Anta SO DO — Material Belum Extend</div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti — Detail Material</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image3.png" onclick="lb(this.src)" /></div>
+            <div class="photo-caption">Tabel status PO per material</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ISU #4 ══ -->
+    <div class="slide" id="slide-isu4">
+      <div class="si">
+        <div class="shead">
+          <div class="icontile amber">4</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap;">
+              <span class="chip chip-amber">In Progress — Re-Labeling</span><span class="chip chip-gray">EGI · ANTA</span>
+            </div>
+            <div class="slide-title">Perbedaan EAN Fisik vs Master Data SAP (~5%) — ANTA</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="mpill"><div class="mpill-k">PT</div><div class="mpill-v">PT. Era Gaya Indonesia (EGI)</div></div>
+          <div class="mpill"><div class="mpill-k">Distributor</div><div class="mpill-v">EMI</div></div>
+          <div class="mpill"><div class="mpill-k">Brand</div><div class="mpill-v" style="display:flex;align-items:center;height:18px;"><img src="img/logo-anta.png" alt="ANTA" style="height:15px;object-fit:contain;"></div></div>
+        </div>
+        <div class="g2">
+          <div style="display:flex;flex-direction:column;gap:.85rem;overflow:hidden;min-height:0;">
+            <div class="card hov tint-amber accent-l" style="border-left-color:#ff9500;">
+              <div class="label" style="color:#b25000;">Deskripsi Isu</div>
+              <p class="body-text">Masih ada perbedaan <strong>EAN</strong> antara fisik dengan master data SAP — sekitar <strong style="color:#b25000;">5%</strong> untuk ANTA. Untuk mengatasinya, dilakukan <strong style="color:#248a3d;">re-label EAN</strong> agar sistem dan fisik kembali sesuai.</p>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:.7rem;">
+                <svg viewBox="0 0 120 120" style="width:78px;height:78px;flex-shrink:0;">
+                  <circle cx="60" cy="60" r="48" fill="none" stroke="#eef1fa" stroke-width="13"/>
+                  <circle class="donut-seg" pathLength="100" cx="60" cy="60" r="48" fill="none" stroke="#ff9500" stroke-width="13" stroke-linecap="round" stroke-dasharray="0 100" data-len="5" data-off="0" transform="rotate(-90 60 60)"/>
+                  <text x="60" y="58" text-anchor="middle" font-size="20" font-weight="800" fill="#b25000">~5%</text>
+                  <text x="60" y="74" text-anchor="middle" font-size="7.5" font-weight="700" fill="#86868b">SELISIH EAN</text>
+                </svg>
+                <p class="body-text" style="font-size:11.5px;">Sekitar <strong style="color:#b25000;">5%</strong> material EAN fisik berbeda dengan master data SAP.</p>
+              </div>
+            </div>
+            <div class="card hov tint-green" style="flex:1;display:flex;flex-direction:column;">
+              <div class="label" style="color:#248a3d;">Contoh Case</div>
+              <div class="ci" style="margin-bottom:0;"><div class="cn g">1</div><span class="body-text">Barang masuk ANTA <strong>4 Juni 2026</strong> — ditemukan material yang berbeda EAN-nya antara fisik dengan master data SAP.</span></div>
+            </div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti — Hasil Scan EAN ANTA</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image7.png" onclick="lb(this.src)" /></div>
+            <div class="photo-caption">Incoming ANTA — Hasil Scan EAN (Pusaka)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ISU #5 ══ -->
+    <div class="slide" id="slide-isu5">
+      <div class="si">
+        <div class="shead">
+          <div class="icontile violet">5</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap;">
+              <span class="chip chip-blue">Akan di-FU ke IT</span><span class="chip chip-gray">EGI · WILSON</span>
+            </div>
+            <div class="slide-title">EAN WILSON Awalan Digit 0 Tidak Terbaca di Handheld (HH)</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="mpill"><div class="mpill-k">PT</div><div class="mpill-v">PT. Era Gaya Indonesia (EGI)</div></div>
+          <div class="mpill"><div class="mpill-k">Distributor</div><div class="mpill-v">EMI</div></div>
+          <div class="mpill"><div class="mpill-k">Brand</div><div class="mpill-v" style="display:flex;align-items:center;height:18px;"><img src="img/logo-wilson.png" alt="WILSON" style="height:14px;object-fit:contain;"></div></div>
+        </div>
+        <div class="g3">
+          <div class="card hov tint-violet accent-l" style="display:flex;flex-direction:column;gap:.7rem;border-left-color:#0071e3;">
+            <div class="label" style="color:#0071e3;">Deskripsi Isu</div>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="text-align:center;flex-shrink:0;">
+                <div style="font-size:1.8rem;font-weight:900;color:#0071e3;line-height:1;letter-spacing:-.03em;">~50%</div>
+                <div style="font-size:9.5px;color:#86868b;font-weight:700;">EAN AWALAN 0</div>
+              </div>
+              <p class="body-text" style="font-size:12.5px;">Ada sekitar <strong style="color:#0071e3;">50%</strong> material EAN di WILSON yang label fisiknya berawalan digit nol (0). Saat di-scan dengan HH, digit <strong style="color:#d70015;">0 tidak terbaca</strong> — sehingga Picker harus menambahkan digit 0 di tiap scan fisik. Terjadi juga kondisi sebaliknya, namun hanya pada sebagian kecil (<strong>~1%</strong>) Article.</p>
+            </div>
+            <div class="card" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:.85rem;background:rgba(0,113,227,.05);border:1px solid rgba(0,113,227,.16);box-shadow:none;padding:1.2rem 1.3rem;">
+              <div style="display:flex;align-items:center;gap:11px;">
+                <div class="icontile" style="width:42px;height:42px;border-radius:13px;font-size:18px;">⟳</div>
+                <div class="label" style="color:#0071e3;margin-bottom:0;font-size:13px;letter-spacing:1.4px;">Tindak Lanjut</div>
+              </div>
+              <p class="body-text" style="font-size:14.5px;line-height:1.75;">Sudah koordinasi dengan <strong>Pak Indra (SCM)</strong>, dan akan di-follow up ke <strong>IT</strong>.</p>
+            </div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti — Scan HH WILSON</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image12.png" onclick="lb(this.src)" /></div>
+            <div class="photo-caption">Handheld scan — EAN WILSON</div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti — Label Fisik vs HH</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image14.png" onclick="lb(this.src)" /></div>
+            <div class="photo-caption">Label fisik dengan digit 0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ISU #7 ══ -->
+    <div class="slide" id="slide-isu7">
+      <div class="si">
+        <div class="shead">
+          <div class="icontile green">6</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap;">
+              <span class="chip chip-blue">Akan di-FU ke IT</span><span class="chip chip-green">Estimasi Solve: Awal Juli</span>
+            </div>
+            <div class="slide-title">Perlu Tambahan Info Old Material &amp; SIZE pada Handheld (HH)</div>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="mpill"><div class="mpill-k">PT</div><div class="mpill-v">EGI · EGA · EAI</div></div>
+          <div class="mpill"><div class="mpill-k">Distributor</div><div class="mpill-v">—</div></div>
+          <div class="mpill"><div class="mpill-k">Brand</div><div class="mpill-v">General</div></div>
+        </div>
+        <div class="g3">
+          <div class="card hov tint-green accent-l" style="display:flex;flex-direction:column;gap:.7rem;border-left-color:#34c759;">
+            <div class="label" style="color:#248a3d;">Deskripsi Isu</div>
+            <div class="ci"><div class="cn g">1</div><span class="body-text">Penambahan informasi <strong>Old Material</strong> dan <strong>SIZE</strong> pada HH, sehingga memudahkan Picker mencari barang di BIN yang memiliki banyak material dan EAN.</span></div>
+            <div class="ci" style="margin-bottom:0;"><div class="cn g">2</div><span class="body-text">Saat ini informasi <strong>Old Material</strong> dan <strong>SIZE</strong> belum tersedia secara komplit di setiap HH.</span></div>
+
+            <div class="fu-box" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:.85rem;padding:1.2rem 1.3rem;">
+              <div style="display:flex;align-items:center;gap:11px;">
+                <div class="icontile green" style="width:42px;height:42px;border-radius:13px;font-size:19px;">✓</div>
+                <div class="label" style="color:#248a3d;margin-bottom:0;font-size:13px;letter-spacing:1.4px;">Tindak Lanjut</div>
+              </div>
+              <p class="body-text" style="color:#1f7a35;font-size:14.5px;line-height:1.75;">Sudah koordinasi dengan <strong>Pak Indra (SCM)</strong>, dan akan di-follow up ke <strong>IT</strong> — estimasi <strong>awal Juli</strong> bisa solve.</p>
+            </div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti #1</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image15.png" onclick="lb(this.src)" /></div>
+          </div>
+          <div class="card hov photo-panel">
+            <div class="label" style="color:#0071e3;">Bukti #2 &amp; #3</div>
+            <div class="photos-scroll"><img class="photo-img" src="img/image9.png" onclick="lb(this.src)" /><img class="photo-img" src="img/image13.png" onclick="lb(this.src)" /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TIMELINE WMS 2026 ══ -->
+    <div class="slide" id="slide-timeline">
+      <div class="si">
+        <div class="shead" style="margin-bottom:1.2rem;">
+          <div class="icontile">◷</div>
+          <div><div class="eyebrow">Roadmap Implementasi</div><div class="htitle">Timeline <span style="color:var(--indigo);">WMS 2026</span></div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:11px;flex:1;min-height:0;">
+          <!-- JULI -->
+          <div class="tl-col">
+            <div class="tl-chev first" style="background:#2f9be0;">JULI</div>
+            <div class="tl-card">
+              <div class="tl-item">E-COMMERCE EAR</div>
+              <div class="tl-item">TIK TOK JDS</div>
+              <div class="tl-item">LEVI'S</div>
+            </div>
+          </div>
+          <!-- AGUSTUS -->
+          <div class="tl-col">
+            <div class="tl-chev" style="background:#2cc4d6;">AGUSTUS</div>
+            <div class="tl-card">
+              <div class="tl-item">E-COMMERCE MII</div>
+              <div class="tl-item">E-COMMERCE DCM</div>
+              <div class="tl-item">FILA</div>
+            </div>
+          </div>
+          <!-- SEPTEMBER -->
+          <div class="tl-col">
+            <div class="tl-chev" style="background:#8cc63f;">SEPTEMBER</div>
+            <div class="tl-card">
+              <div class="tl-item">CIKUPA NASA</div>
+            </div>
+          </div>
+          <!-- OKTOBER -->
+          <div class="tl-col">
+            <div class="tl-chev" style="background:#c3d52e;color:#3a3a00;">OKTOBER</div>
+            <div class="tl-card">
+              <div class="tl-item">CIKUPA TAM</div>
+            </div>
+          </div>
+          <!-- NOVEMBER -->
+          <div class="tl-col">
+            <div class="tl-chev" style="background:#f2b134;color:#4a2e00;">NOVEMBER</div>
+            <div class="tl-card">
+              <div class="tl-item">CIKUPA SES</div>
+            </div>
+          </div>
+          <!-- DESEMBER -->
+          <div class="tl-col">
+            <div class="tl-chev" style="background:#dd9b2b;">DESEMBER</div>
+            <div class="tl-card">
+              <div class="tl-item">CIKUPA DCM</div>
+              <div class="tl-item">CIKUPA EAR</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMING SOON -->
+        <div class="card" style="margin-top:1rem;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:.85rem 1.1rem;">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <div class="icontile violet" style="width:32px;height:32px;border-radius:10px;font-size:15px;">★</div>
+            <span style="font-size:12px;font-weight:800;letter-spacing:1px;color:var(--muted);">COMING SOON</span>
+          </div>
+          <div style="width:1px;height:22px;background:rgba(0,0,0,.08);"></div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;">
+            <span class="chip chip-violet">LE COQ</span>
+            <span class="chip chip-violet">PUMA</span>
+            <span class="chip chip-violet">HOOPS</span>
+            <span class="chip chip-violet">RUD RUNNER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slide-area -->
+
+  <div id="nav-bar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Prev
+    </button>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <div id="dots" style="display:flex;gap:7px;align-items:center;"></div>
+      <div id="counter">01 / 08</div>
+    </div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">
+      Next<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="lightbox" onclick="closeLb()">
+  <span id="lb-x" onclick="closeLb()">✕</span>
+  <img id="lb-img" src="" onclick="event.stopPropagation()" />
+</div>
+
+<script>
+const IDS = ['slide-cover','slide-isu1','slide-isu2','slide-isu3','slide-isu4','slide-isu5','slide-isu7','slide-timeline'];
+const N = IDS.length;
+let cur = 0;
+
+const dotsEl = document.getElementById('dots');
+IDS.forEach((_,i) => {
+  const d = document.createElement('div');
+  d.className = 'dot'+(i===0?' active':'');
+  d.onclick = ()=>goTo(i);
+  dotsEl.appendChild(d);
+});
+
+function resetAnims(el){
+  el.querySelectorAll('.barfill,.hbar-fill').forEach(b=>b.style.width='0');
+  el.querySelectorAll('.donut-seg').forEach(s=>s.setAttribute('stroke-dasharray','0 100'));
+  el.querySelectorAll('.gauge-fill').forEach(s=>s.setAttribute('stroke-dasharray','0 100'));
+  el.querySelectorAll('.gauge-needle').forEach(s=>s.style.transform='rotate(-90deg)');
+  el.querySelectorAll('.count').forEach(c=>c.textContent='0');
+}
+function runAnims(el){
+  setTimeout(()=>{
+    el.querySelectorAll('.barfill').forEach(b=>b.style.width=b.dataset.w);
+    el.querySelectorAll('.hbar-fill').forEach(b=>b.style.width=b.dataset.w);
+    el.querySelectorAll('.donut-seg').forEach(s=>{
+      s.setAttribute('stroke-dasharray', s.dataset.len+' '+(100-parseFloat(s.dataset.len)));
+      s.setAttribute('stroke-dashoffset', s.dataset.off||0);
+    });
+    el.querySelectorAll('.gauge-fill').forEach(s=>s.setAttribute('stroke-dasharray', s.dataset.len+' '+(100-parseFloat(s.dataset.len))));
+    el.querySelectorAll('.gauge-needle').forEach(s=>{ const deg=-90+(parseFloat(s.dataset.rot)/100*180); s.style.transform='rotate('+deg+'deg)'; });
+    el.querySelectorAll('.count').forEach(c=>{
+      const to=+c.dataset.to; let t0=null;
+      function step(ts){ if(!t0)t0=ts; const p=Math.min((ts-t0)/750,1); c.textContent=Math.round(p*to); if(p<1)requestAnimationFrame(step);}
+      requestAnimationFrame(step);
+    });
+  },180);
+}
+
+function goTo(idx){
+  if(idx<0||idx>=N||idx===cur) return;
+  const sl = document.querySelectorAll('.slide');
+  const old = cur;
+  sl[old].classList.remove('active'); sl[old].classList.add('exit');
+  setTimeout(()=>{ sl[old].classList.remove('exit'); resetAnims(sl[old]); },420);
+  cur=idx;
+  resetAnims(sl[cur]);
+  sl[cur].classList.add('active');
+  runAnims(sl[cur]);
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  document.getElementById('counter').textContent=String(cur+1).padStart(2,'0')+' / '+String(N).padStart(2,'0');
+  document.getElementById('progress-bar').style.width=(cur/(N-1)*100)+'%';
+  document.getElementById('btn-prev').disabled=cur===0;
+  document.getElementById('btn-next').disabled=cur===N-1;
+}
+function navigate(d){goTo(cur+d);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') { navigate(1); e.preventDefault(); }
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') navigate(-1);
+  if(e.key==='Escape') closeLb();
+});
+function lb(src){ document.getElementById('lb-img').src=src; document.getElementById('lightbox').classList.add('open'); }
+function closeLb(){ document.getElementById('lightbox').classList.remove('open'); }
+
+// Floating logo bar on content slides
+document.querySelectorAll('.slide:not(#slide-cover)').forEach(slide => {
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:absolute;top:16px;right:18px;display:flex;align-items:center;gap:10px;z-index:20;background:rgba(255,255,255,.72);border:1px solid rgba(0,0,0,.06);border-radius:14px;padding:6px 13px;box-shadow:0 4px 16px rgba(0,0,0,.08);backdrop-filter:saturate(180%) blur(20px);';
+  bar.innerHTML = `<img src="img/logo-scm.png" alt="SCM" style="height:26px;object-fit:contain;" /><div style="width:1px;height:20px;background:#e5e7eb;"></div><img src="img/logo-erajaya.png" alt="Erajaya" style="height:20px;object-fit:contain;" />`;
+  slide.appendChild(bar);
+});
+
+document.getElementById('progress-bar').style.width='0%';
+</script>
+</body>
+</html>
